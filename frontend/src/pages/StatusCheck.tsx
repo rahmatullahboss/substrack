@@ -1,5 +1,6 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { getTranslation, LanguageCode, languageNames, defaultLanguage } from "../translations";
 
 interface SubscriptionResult {
   customer_name: string | null;
@@ -29,6 +30,19 @@ export default function StatusCheck() {
   } | null>(null);
   const [error, setError] = useState("");
   const [publicStats, setPublicStats] = useState<PublicStats | null>(null);
+  const [language, setLanguage] = useState<LanguageCode>(() => {
+    const saved = localStorage.getItem("substrack_language") as LanguageCode;
+    return saved || defaultLanguage;
+  });
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+
+  const t = getTranslation(language);
+
+  const changeLanguage = (lang: LanguageCode) => {
+    setLanguage(lang);
+    localStorage.setItem("substrack_language", lang);
+    setShowLanguageMenu(false);
+  };
 
   useEffect(() => {
     fetch("/api/public/stats")
@@ -74,13 +88,103 @@ export default function StatusCheck() {
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: "1.2rem", color: "#4f46e5" }}>
           ⚡ Substrack
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <a href="#pricing" style={{ padding: "8px 16px", color: "#6b7280", textDecoration: "none", fontWeight: 500, fontSize: "0.9rem" }}>Pricing</a>
-          <a href="#tracker" style={{ padding: "8px 16px", color: "#6b7280", textDecoration: "none", fontWeight: 500, fontSize: "0.9rem" }}>Track Status</a>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <a href="#pricing" style={{ padding: "8px 16px", color: "#6b7280", textDecoration: "none", fontWeight: 500, fontSize: "0.9rem" }}>{t.nav.pricing}</a>
+          <a href="#tracker" style={{ padding: "8px 16px", color: "#6b7280", textDecoration: "none", fontWeight: 500, fontSize: "0.9rem" }}>{t.nav.trackStatus}</a>
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              style={{
+                padding: "8px 16px",
+                background: "#f3f4f6",
+                border: "none",
+                borderRadius: 8,
+                color: "#6b7280",
+                fontWeight: 500,
+                fontSize: "0.9rem",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              🌐 {languageNames[language]}
+            </button>
+            {showLanguageMenu && (
+              <div style={{
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                marginTop: 8,
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderRadius: 8,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                maxHeight: 300,
+                overflowY: "auto",
+                zIndex: 1000,
+                minWidth: 180,
+              }}>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr",
+                  gap: 2,
+                  padding: 8,
+                }}>
+                  {(Object.keys(languageNames) as LanguageCode[]).slice(0, 20).map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => changeLanguage(lang)}
+                      style={{
+                        padding: "8px 12px",
+                        background: language === lang ? "#4f46e5" : "transparent",
+                        border: "none",
+                        borderRadius: 6,
+                        color: language === lang ? "#fff" : "#111827",
+                        fontWeight: language === lang ? 600 : 400,
+                        fontSize: "0.85rem",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {languageNames[lang]}
+                    </button>
+                  ))}
+                </div>
+                <div style={{
+                  padding: 8,
+                  borderTop: "1px solid #e5e7eb",
+                  textAlign: "center",
+                }}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const more = Object.keys(languageNames) as LanguageCode[];
+                      const current = more.slice(0, 20);
+                      const rest = more.slice(20);
+                      if (rest.length > 0) {
+                        alert(`More languages available: ${rest.map(l => languageNames[l]).join(", ")}`);
+                      }
+                    }}
+                    style={{
+                      color: "#4f46e5",
+                      fontSize: "0.8rem",
+                      textDecoration: "none",
+                      fontWeight: 500,
+                    }}
+                  >
+                    +{Object.keys(languageNames).length - 20} more
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
           <Link to="/admin/login" style={{
             padding: "8px 20px", background: "#4f46e5", color: "#fff",
             borderRadius: 8, textDecoration: "none", fontWeight: 600, fontSize: "0.875rem",
-          }}>Admin →</Link>
+          }}>{t.nav.admin}</Link>
         </div>
       </nav>
 
@@ -94,21 +198,20 @@ export default function StatusCheck() {
           borderRadius: 20, color: "#7c3aed", fontSize: "0.8rem", fontWeight: 600,
           marginBottom: 24, letterSpacing: "0.3px",
         }}>
-          Subscription Management, Simplified
+          {t.hero.badge}
         </div>
         <h1 style={{
           fontSize: "clamp(2.2rem, 5vw, 3.5rem)", fontWeight: 900, lineHeight: 1.15,
           color: "#111827", marginBottom: 20, letterSpacing: "-1px",
         }}>
-          Track Your Subscription<br />
+          {t.hero.title1}<br />
           <span style={{
             background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          }}>Status Anytime</span>
+          }}>{t.hero.title2}</span>
         </h1>
         <p style={{ fontSize: "1.15rem", color: "#6b7280", maxWidth: 540, margin: "0 auto 40px", lineHeight: 1.7 }}>
-          Enter your email below to instantly check when your subscription renews,
-          how many days remain, and your plan details.
+          {t.hero.description}
         </p>
         <a href="#tracker" style={{
           display: "inline-block", padding: "14px 32px",
@@ -116,7 +219,7 @@ export default function StatusCheck() {
           color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: "1rem",
           textDecoration: "none", boxShadow: "0 4px 20px rgba(79,70,229,0.3)",
         }}>
-          Check My Status ↓
+          {t.hero.cta}
         </a>
       </section>
 
@@ -127,10 +230,10 @@ export default function StatusCheck() {
         borderBottom: "1px solid #f3f4f6",
       }}>
         {[
-          { label: "Active Subscribers", value: publicStats ? String(publicStats.active_count) : "…" },
-          { label: "Single Plan", value: "1" },
-          { label: "Slots Available", value: "Limited" },
-          { label: "Support", value: "24/7" },
+          { label: t.stats.activeSubscribers, value: publicStats ? String(publicStats.active_count) : "…" },
+          { label: t.stats.singlePlan, value: "1" },
+          { label: t.stats.slotsAvailable, value: "Limited" },
+          { label: t.stats.support, value: "24/7" },
         ].map((s) => (
           <div key={s.label} style={{ textAlign: "center" }}>
             <div style={{ fontSize: "1.8rem", fontWeight: 800, color: "#4f46e5" }}>{s.value}</div>
@@ -146,12 +249,12 @@ export default function StatusCheck() {
             display: "inline-block", padding: "5px 14px", background: "#ede9fe",
             borderRadius: 20, color: "#7c3aed", fontSize: "0.75rem",
             fontWeight: 700, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.5px",
-          }}>Our Plan</div>
+          }}>{t.plan.badge}</div>
           <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", letterSpacing: "-0.5px" }}>
-            One Plan. Full Power.
+            {t.plan.title}
           </h2>
           <p style={{ color: "#6b7280", marginTop: 8, fontSize: "1rem" }}>
-            We offer a single, carefully curated subscription — Google Gemini Ultra via Family Sharing.
+            {t.plan.description}
           </p>
         </div>
 
@@ -168,16 +271,16 @@ export default function StatusCheck() {
               background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff",
               padding: "6px 20px", borderRadius: 20, fontSize: "0.8rem", fontWeight: 700,
               whiteSpace: "nowrap", boxShadow: "0 4px 12px rgba(124,58,237,0.3)",
-            }}>✦ Google Gemini Ultra — Family Sharing</div>
+            }}>✦ {t.plan.planName}</div>
 
             {/* Price */}
             <div style={{ textAlign: "center", marginBottom: 32, marginTop: 8 }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 6 }}>
-                <span style={{ fontSize: "3.5rem", fontWeight: 900, color: "#111827", lineHeight: 1 }}>$25</span>
-                <span style={{ color: "#9ca3af", fontSize: "1rem" }}>/ month</span>
+                <span style={{ fontSize: "3.5rem", fontWeight: 900, color: "#111827", lineHeight: 1 }}>{t.plan.price}</span>
+                <span style={{ color: "#9ca3af", fontSize: "1rem" }}>{t.plan.period}</span>
               </div>
               <p style={{ color: "#7c3aed", fontSize: "0.875rem", fontWeight: 600, marginTop: 6 }}>
-                Single Family Sharing Slot
+                {t.plan.slotDescription}
               </p>
             </div>
 
@@ -187,32 +290,20 @@ export default function StatusCheck() {
               padding: "20px 24px", marginBottom: 24, border: "1px solid #ddd6fe",
             }}>
               <div style={{ fontWeight: 700, color: "#4f46e5", marginBottom: 10, fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.4px" }}>
-                🔗 What is Google Family Sharing?
+                {t.plan.whatIsFamilySharing}
               </div>
-              <p style={{ color: "#374151", fontSize: "0.9rem", lineHeight: 1.7, margin: 0 }}>
-                Google One Family Sharing lets the primary account holder share their Gemini Ultra subscription
-                with up to 5 family members. Each member gets their own separate Google account with full
-                Gemini Ultra access — <strong>1 slot = your own independent Google account</strong>,
-                not shared storage or shared sessions.
-              </p>
+              <p style={{ color: "#374151", fontSize: "0.9rem", lineHeight: 1.7, margin: 0 }} dangerouslySetInnerHTML={{ __html: t.plan.familySharingDescription }} />
             </div>
 
             {/* Features */}
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px" }}>
-              {[
-                ["✓", "Google Gemini Ultra (most powerful Gemini model)", "#059669"],
-                ["✓", "Your own independent Google account slot", "#059669"],
-                ["✓", "Full Gemini Advanced access in Gmail, Docs, Sheets", "#059669"],
-                ["✓", "6TB Google One storage included", "#059669"],
-                ["✓", "Deep Research, long context & advanced features", "#059669"],
-                ["✓", "Monthly subscription — cancel anytime", "#059669"],
-              ].map(([icon, text, color]) => (
+              {t.plan.features.map((text, i) => (
                 <li key={text} style={{
                   display: "flex", alignItems: "flex-start", gap: 10,
                   padding: "7px 0", fontSize: "0.92rem", color: "#374151",
                   borderBottom: "1px solid #ede9fe",
                 }}>
-                  <span style={{ color, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                  <span style={{ color: "#059669", fontWeight: 800, flexShrink: 0, marginTop: 1 }}>✓</span>
                   {text}
                 </li>
               ))}
@@ -227,13 +318,9 @@ export default function StatusCheck() {
               <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>⚠️</span>
               <div>
                 <div style={{ fontWeight: 700, color: "#c2410c", marginBottom: 4, fontSize: "0.875rem" }}>
-                  Credits Not Included
+                  {t.plan.creditsWarning.title}
                 </div>
-                <p style={{ color: "#92400e", fontSize: "0.85rem", lineHeight: 1.6, margin: 0 }}>
-                  This plan does <strong>not</strong> include any AI credits (API access, image generation quotas, etc.).
-                  If you need Gemini API credits or additional Google AI Studio usage,
-                  those must be purchased separately from your own Google account.
-                </p>
+                <p style={{ color: "#92400e", fontSize: "0.85rem", lineHeight: 1.6, margin: 0 }} dangerouslySetInnerHTML={{ __html: t.plan.creditsWarning.description }} />
               </div>
             </div>
 
@@ -243,18 +330,13 @@ export default function StatusCheck() {
               color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: "1rem",
               textDecoration: "none", boxShadow: "0 4px 16px rgba(124,58,237,0.3)",
             }}>
-              Check My Subscription Status
+              {t.plan.checkStatus}
             </a>
           </div>
 
           {/* FAQ-style note */}
           <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            {[
-              { q: "Is this my own Google account?", a: "Yes. You use your own existing Google account — we just add it to the family group." },
-              { q: "Do other family members see me?", a: "No. Each slot is fully private. Members do not see each other's data or usage." },
-              { q: "What if I already have Google One?", a: "You can still join. The family share gives you Gemini Ultra on top of your existing plan." },
-              { q: "Can I use Gemini API with this?", a: "No. API credits are not included. This covers Gemini Advanced (web/app) only." },
-            ].map((item) => (
+            {t.plan.faqs.map((item) => (
               <div key={item.q} style={{
                 background: "#fff", border: "1px solid #f3f4f6",
                 borderRadius: 12, padding: "16px",
@@ -274,18 +356,18 @@ export default function StatusCheck() {
             display: "inline-block", padding: "5px 14px", background: "#ede9fe",
             borderRadius: 20, color: "#7c3aed", fontSize: "0.75rem",
             fontWeight: 700, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.5px",
-          }}>Live Status Check</div>
+          }}>{t.tracker.badge}</div>
           <h2 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#111827", marginBottom: 8, letterSpacing: "-0.5px" }}>
-            Check Your Subscription
+            {t.tracker.title}
           </h2>
           <p style={{ color: "#6b7280", marginBottom: 32, lineHeight: 1.6 }}>
-            Enter the email address you used when subscribing to see your current plan and expiry.
+            {t.tracker.description}
           </p>
 
           <form onSubmit={handleSearch} style={{ display: "flex", gap: 8 }}>
             <input
               type="email"
-              placeholder="your@email.com"
+              placeholder={t.tracker.placeholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -309,7 +391,7 @@ export default function StatusCheck() {
                 opacity: loading ? 0.7 : 1,
               }}
             >
-              {loading ? "..." : "Check →"}
+              {loading ? t.tracker.checking : t.tracker.checkButton}
             </button>
           </form>
 
@@ -322,9 +404,9 @@ export default function StatusCheck() {
               marginTop: 28, padding: 24, background: "#fef2f2",
               border: "1px solid #fecaca", borderRadius: 12, textAlign: "center",
             }}>
-              <div style={{ fontSize: "2rem", marginBottom: 8 }}>🔍</div>
+              <div style={{ fontSize: "2rem", marginBottom: 8 }}>{t.tracker.notFound}</div>
               <p style={{ color: "#991b1b", fontWeight: 500 }}>
-                No subscription found for <strong>{email}</strong>
+                {t.tracker.noSubscriptionFound} <strong>{email}</strong>
               </p>
             </div>
           )}
@@ -335,7 +417,7 @@ export default function StatusCheck() {
             const statusColor = days <= 0 ? "#dc2626" : days <= 3 ? "#d97706" : "#059669";
             const statusBg = days <= 0 ? "#fef2f2" : days <= 3 ? "#fffbeb" : "#ecfdf5";
             const statusBorder = days <= 0 ? "#fecaca" : days <= 3 ? "#fde68a" : "#a7f3d0";
-            const statusLabel = days <= 0 ? "❌ Expired" : days <= 3 ? "⚠️ Expiring Soon" : "✅ Active";
+            const statusLabel = days <= 0 ? t.tracker.expired : days <= 3 ? t.tracker.expiringSoon : t.tracker.active;
             return (
               <div style={{ marginTop: 28, textAlign: "left" }}>
                 {/* Status badge */}
@@ -353,7 +435,7 @@ export default function StatusCheck() {
                     {Math.max(0, days)}
                   </div>
                   <div style={{ color: "#9ca3af", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.5px", marginTop: 4 }}>
-                    days remaining
+                    {t.tracker.daysRemaining}
                   </div>
                 </div>
 
