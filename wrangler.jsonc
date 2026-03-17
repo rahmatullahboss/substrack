@@ -1,0 +1,19 @@
+{
+  "name": "substrack",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./public/",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "vars": {
+    "ADMIN_EMAIL": "rahmatullahzisan@gmail.com"
+  }
+  // Secrets (set via `npx wrangler secret put`):
+  // DATABASE_URL - Neon PostgreSQL connection string
+  // JWT_SECRET - Secret for JWT signing
+  // RESEND_API_KEY - Resend email API key
+  // ADMIN_PASSWORD_HASH - bcrypt hash of admin password
+}
