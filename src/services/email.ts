@@ -1,4 +1,5 @@
-import type { NeonClient } from "./db";
+import { getDb } from "./db";
+type Sql = ReturnType<typeof getDb>;
 
 interface ExpiringSubscription {
   subscription_id: number;
@@ -79,7 +80,7 @@ export async function sendExpiryReminder(
 }
 
 export async function getExpiringSubscriptions(
-  sql: NeonClient,
+  sql: Sql,
   daysAhead: number = 3
 ): Promise<ExpiringSubscription[]> {
   const rows = await sql`
@@ -101,7 +102,7 @@ export async function getExpiringSubscriptions(
 }
 
 export async function markReminderSent(
-  sql: NeonClient,
+  sql: Sql,
   ids: number[]
 ): Promise<void> {
   if (ids.length === 0) return;
@@ -113,14 +114,14 @@ export async function markReminderSent(
 }
 
 export async function markExpiredSubscriptions(
-  sql: NeonClient
+  sql: Sql
 ): Promise<number> {
-  const result = await sql`
+  const result = (await sql`
     UPDATE subscriptions
     SET status = 'expired', updated_at = NOW()
     WHERE status = 'active'
       AND expiry_date < CURRENT_DATE
     RETURNING subscription_id
-  `;
+  `) as Array<{ subscription_id: number }>;
   return result.length;
 }

@@ -4,6 +4,8 @@ import { cors } from "hono/cors";
 import authRoutes from "./routes/auth";
 import subscriptionRoutes from "./routes/subscriptions";
 import publicRoutes from "./routes/public";
+import orderRoutes from "./routes/orders";
+import invoiceRoutes from "./routes/invoices";
 import { getDb } from "./services/db";
 import {
   sendExpiryReminder,
@@ -41,6 +43,8 @@ app.onError(async (err, c) => {
 app.route("/api/auth", authRoutes);
 app.route("/api/subscriptions", subscriptionRoutes);
 app.route("/api/public", publicRoutes);
+app.route("/api/orders", orderRoutes);
+app.route("/api/invoices", invoiceRoutes);
 
 // Health check
 app.get("/api/health", (c) => {

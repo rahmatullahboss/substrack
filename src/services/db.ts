@@ -5,3 +5,4 @@ export function getDb(databaseUrl: string) {
 }
 
 export type NeonClient = ReturnType<typeof neon>;
+

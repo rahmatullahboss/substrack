@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
+import { join } from "path";
 
 const DATABASE_URL = process.argv[2];
 if (!DATABASE_URL) {
@@ -8,23 +9,36 @@ if (!DATABASE_URL) {
 }
 
 const sql = neon(DATABASE_URL);
-const migration = readFileSync("migrations/0001_init.sql", "utf-8");
 
-// Split by semicolons and run each statement
-const statements = migration
-  .split(";")
-  .map((s) => s.trim())
-  .filter((s) => s.length > 0 && !s.startsWith("--"));
+// Find all .sql files in migrations/ folder, sorted by name
+const migrationFiles = readdirSync("migrations")
+  .filter((f) => f.endsWith(".sql"))
+  .sort();
 
-console.log(`Running ${statements.length} statements...`);
+for (const file of migrationFiles) {
+  console.log(`\n📄 Running migration: ${file}`);
+  const migration = readFileSync(join("migrations", file), "utf-8");
 
-for (const stmt of statements) {
-  try {
-    await sql(stmt);
-    console.log("✓", stmt.slice(0, 60).replace(/\n/g, " ") + "...");
-  } catch (err) {
-    console.error("✗", stmt.slice(0, 60), "\n  Error:", err.message);
+  const statements = migration
+    .split(";")
+    .map((s) =>
+      // Strip comment lines so a block starting with -- doesn't get dropped
+      s
+        .split("\n")
+        .filter((line) => !line.trim().startsWith("--"))
+        .join("\n")
+        .trim()
+    )
+    .filter((s) => s.length > 0);
+
+  for (const stmt of statements) {
+    try {
+      await sql(stmt);
+      console.log("  ✓", stmt.slice(0, 70).replace(/\n/g, " ") + "...");
+    } catch (err) {
+      console.error("  ✗", stmt.slice(0, 70), "\n    Error:", err.message);
+    }
   }
 }
 
-console.log("\n✅ Migration complete!");
+console.log("\n✅ All migrations complete!");

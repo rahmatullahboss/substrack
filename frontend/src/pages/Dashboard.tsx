@@ -238,6 +238,7 @@ export default function Dashboard() {
           ⚡ <span>Substrack</span>
         </Link>
         <div className="navbar-links">
+          <Link to="/admin/orders">Orders</Link>
           <Link to="/">Public Page</Link>
           <button onClick={handleLogout}>Logout</button>
         </div>

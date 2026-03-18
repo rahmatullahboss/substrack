@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { getTranslation, LanguageCode, languageNames, defaultLanguage } from "../translations";
+import { getTranslation, LanguageCode, languageNames, defaultLanguage, availableLanguages } from "../translations";
 
 interface SubscriptionResult {
   customer_name: string | null;
@@ -43,6 +43,17 @@ export default function StatusCheck() {
     localStorage.setItem("substrack_language", lang);
     setShowLanguageMenu(false);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (showLanguageMenu && !target.closest("button") && !target.closest("[data-language-menu]")) {
+        setShowLanguageMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showLanguageMenu]);
 
   useEffect(() => {
     fetch("/api/public/stats")
@@ -111,7 +122,7 @@ export default function StatusCheck() {
               🌐 {languageNames[language]}
             </button>
             {showLanguageMenu && (
-              <div style={{
+              <div data-language-menu style={{
                 position: "absolute",
                 top: "100%",
                 right: 0,
@@ -120,63 +131,48 @@ export default function StatusCheck() {
                 border: "1px solid #e5e7eb",
                 borderRadius: 8,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                maxHeight: 300,
+                maxHeight: 400,
                 overflowY: "auto",
                 zIndex: 1000,
-                minWidth: 180,
+                minWidth: 200,
               }}>
                 <div style={{
                   display: "grid",
                   gridTemplateColumns: "1fr",
-                  gap: 2,
-                  padding: 8,
+                  gap: 0,
+                  padding: 0,
                 }}>
-                  {(Object.keys(languageNames) as LanguageCode[]).slice(0, 20).map((lang) => (
+                  {availableLanguages.map((lang) => (
                     <button
                       key={lang}
                       onClick={() => changeLanguage(lang)}
                       style={{
-                        padding: "8px 12px",
+                        padding: "10px 16px",
                         background: language === lang ? "#4f46e5" : "transparent",
                         border: "none",
-                        borderRadius: 6,
+                        borderBottom: "1px solid #f3f4f6",
                         color: language === lang ? "#fff" : "#111827",
                         fontWeight: language === lang ? 600 : 400,
-                        fontSize: "0.85rem",
+                        fontSize: "0.875rem",
                         cursor: "pointer",
                         textAlign: "left",
                         whiteSpace: "nowrap",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (language !== lang) {
+                          e.currentTarget.style.background = "#f9fafb";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (language !== lang) {
+                          e.currentTarget.style.background = "transparent";
+                        }
                       }}
                     >
                       {languageNames[lang]}
                     </button>
                   ))}
-                </div>
-                <div style={{
-                  padding: 8,
-                  borderTop: "1px solid #e5e7eb",
-                  textAlign: "center",
-                }}>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const more = Object.keys(languageNames) as LanguageCode[];
-                      const current = more.slice(0, 20);
-                      const rest = more.slice(20);
-                      if (rest.length > 0) {
-                        alert(`More languages available: ${rest.map(l => languageNames[l]).join(", ")}`);
-                      }
-                    }}
-                    style={{
-                      color: "#4f46e5",
-                      fontSize: "0.8rem",
-                      textDecoration: "none",
-                      fontWeight: 500,
-                    }}
-                  >
-                    +{Object.keys(languageNames).length - 20} more
-                  </a>
                 </div>
               </div>
             )}
@@ -442,10 +438,10 @@ export default function StatusCheck() {
                 {/* Details */}
                 <div style={{ background: "#f9fafb", border: "1px solid #f3f4f6", borderRadius: 12, overflow: "hidden" }}>
                   {([
-                    s.customer_name ? ["Name", s.customer_name] : null,
-                    ["Plan", s.plan_name],
-                    ["Payment Date", formatDate(s.payment_date)],
-                    ["Expiry Date", formatDate(s.expiry_date)],
+                    s.customer_name ? [t.statusLabels.name, s.customer_name] : null,
+                    [t.statusLabels.plan, s.plan_name],
+                    [t.statusLabels.paymentDate, formatDate(s.payment_date)],
+                    [t.statusLabels.expiryDate, formatDate(s.expiry_date)],
                   ].filter(Boolean) as string[][]).map(([label, value]) => (
                     <div key={label} style={{
                       display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -461,7 +457,7 @@ export default function StatusCheck() {
                 {result.subscriptions && result.subscriptions.length > 1 && (
                   <div style={{ marginTop: 16 }}>
                     <p style={{ color: "#9ca3af", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>
-                      History ({result.subscriptions.length} records)
+                      {t.statusLabels.history} ({result.subscriptions.length} {t.statusLabels.records})
                     </p>
                     {result.subscriptions.slice(1).map((sub, i) => (
                       <div key={i} style={{
@@ -486,28 +482,26 @@ export default function StatusCheck() {
       {/* ── HOW IT WORKS ── */}
       <section style={{ padding: "72px 24px", background: "#f9fafb" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 8, letterSpacing: "-0.5px" }}>How It Works</h2>
-          <p style={{ color: "#6b7280", marginBottom: 48 }}>Simple and transparent — no hidden terms.</p>
+          <h2 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 8, letterSpacing: "-0.5px" }}>{t.howItWorks.title}</h2>
+          <p style={{ color: "#6b7280", marginBottom: 48 }}>{t.howItWorks.description}</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 32 }}>
-            {[
-              { step: "01", icon: "💳", title: "Subscribe", desc: "Choose a plan and complete your payment with us directly." },
-              { step: "02", icon: "📧", title: "Get Confirmed", desc: "Your subscription is registered and linked to your email." },
-              { step: "03", icon: "🔍", title: "Track Anytime", desc: "Enter your email here to see your plan status at any time." },
-              { step: "04", icon: "🔄", title: "Renew Easily", desc: "We'll remind you before expiry so you never lose access." },
-            ].map((item) => (
-              <div key={item.step} style={{ textAlign: "center" }}>
-                <div style={{
-                  width: 56, height: 56, background: "#ede9fe", borderRadius: 14,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "1.5rem", margin: "0 auto 16px",
-                }}>{item.icon}</div>
-                <div style={{ fontSize: "0.7rem", color: "#7c3aed", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
-                  Step {item.step}
+            {t.howItWorks.steps.map((item, idx) => {
+              const icons = ["💳", "📧", "🔍", "🔄"];
+              return (
+                <div key={item.step} style={{ textAlign: "center" }}>
+                  <div style={{
+                    width: 56, height: 56, background: "#ede9fe", borderRadius: 14,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "1.5rem", margin: "0 auto 16px",
+                  }}>{icons[idx] || "⭐"}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#7c3aed", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
+                    Step {item.step}
+                  </div>
+                  <div style={{ fontWeight: 700, marginBottom: 6, color: "#111827" }}>{item.title}</div>
+                  <div style={{ color: "#6b7280", fontSize: "0.875rem", lineHeight: 1.6 }}>{item.desc}</div>
                 </div>
-                <div style={{ fontWeight: 700, marginBottom: 6, color: "#111827" }}>{item.title}</div>
-                <div style={{ color: "#6b7280", fontSize: "0.875rem", lineHeight: 1.6 }}>{item.desc}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -520,9 +514,9 @@ export default function StatusCheck() {
       }}>
         <div style={{ fontWeight: 700, color: "#4f46e5" }}>⚡ Substrack</div>
         <p style={{ color: "#9ca3af", fontSize: "0.8rem" }}>
-          © {new Date().getFullYear()} Substrack. All rights reserved.
+          © {new Date().getFullYear()} {t.footer.rights}
         </p>
-        <Link to="/admin/login" style={{ color: "#9ca3af", fontSize: "0.8rem", textDecoration: "none" }}>Admin Login</Link>
+        <Link to="/admin/login" style={{ color: "#9ca3af", fontSize: "0.8rem", textDecoration: "none" }}>{t.footer.adminLogin}</Link>
       </footer>
     </div>
   );

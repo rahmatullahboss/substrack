@@ -1006,6 +1006,11 @@ export const languageNames: Record<LanguageCode, string> = {
   cy: 'Cymraeg',
 };
 
+// Languages that have actual translations
+export const availableLanguages: LanguageCode[] = [
+  'en', 'es', 'fr', 'de', 'bn', 'hi', 'zh', 'ar', 'ja', 'ru', 'pt', 'ur',
+];
+
 export const defaultLanguage: LanguageCode = 'en';
 
 export function getTranslation(lang: LanguageCode): Translation {
