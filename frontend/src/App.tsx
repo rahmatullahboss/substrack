@@ -3,12 +3,16 @@ import StatusCheck from "./pages/StatusCheck";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
+import PlaceOrder from "./pages/PlaceOrder";
+import PublicInvoice from "./pages/PublicInvoice";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<StatusCheck />} />
+        <Route path="/order" element={<PlaceOrder />} />
+        <Route path="/invoice/:invoiceNumber" element={<PublicInvoice />} />
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin" element={<Dashboard />} />
         <Route path="/admin/orders" element={<Orders />} />

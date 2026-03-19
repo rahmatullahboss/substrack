@@ -320,14 +320,24 @@ export default function StatusCheck() {
               </div>
             </div>
 
-            <a href="#tracker" style={{
-              display: "block", textAlign: "center",
-              padding: "14px", background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
-              color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: "1rem",
-              textDecoration: "none", boxShadow: "0 4px 16px rgba(124,58,237,0.3)",
-            }}>
-              {t.plan.checkStatus}
-            </a>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Link to="/order" style={{
+                display: "block", textAlign: "center",
+                padding: "15px", background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: "1rem",
+                textDecoration: "none", boxShadow: "0 4px 16px rgba(124,58,237,0.3)",
+              }}>
+                🛒 Order Now
+              </Link>
+              <a href="#tracker" style={{
+                display: "block", textAlign: "center",
+                padding: "13px", background: "transparent",
+                color: "#7c3aed", borderRadius: 10, fontWeight: 600, fontSize: "0.9rem",
+                textDecoration: "none", border: "1.5px solid #c4b5fd",
+              }}>
+                {t.plan.checkStatus}
+              </a>
+            </div>
           </div>
 
           {/* FAQ-style note */}
